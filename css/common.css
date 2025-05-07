@@ -29,13 +29,16 @@ nav a.text-primary:hover {
 
 /* Pill-shaped hover effect for nav items */
 nav a.text-gray-600 {
-    padding: 0.5rem 0.5rem;
+    padding: 0.5rem 1rem;
     display: inline-block;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
 }
 
 nav a.text-gray-600:hover {
     border-radius: 9999px;
-    background-color: rgba(16, 185, 129, 0.1);
+    background-color: #10B981;
+    color: white !important;
 }
 
 /* Mobile menu items */
@@ -50,7 +53,8 @@ nav a.text-gray-600:hover {
 
 #mobile-menu a.text-gray-600:hover {
     border-radius: 9999px;
-    background-color: rgba(16, 185, 129, 0.1);
+    background-color: #10B981;
+    color: white !important;
 }
 
 .nav-active {

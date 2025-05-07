@@ -7,37 +7,6 @@ body {
     font-family: 'Inter', sans-serif;
 }
 
-/* Navigation Styles */
-nav {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-}
-
-/* Pill-shaped active links */
-nav a.text-primary {
-    border-radius: 9999px; /* Pill shape */
-    padding: 0.5rem 1rem;
-    background-color: #10B981;
-    color: white !important;
-    display: inline-block;
-}
-
-/* Make sure active link stays visible when hovered */
-nav a.text-primary:hover {
-    background-color: #0ea271; /* Slightly darker green on hover */
-    color: white !important;
-}
-
-/* Pill-shaped hover effect for nav items */
-nav a.text-gray-600 {
-    padding: 0.5rem 0.5rem;
-    display: inline-block;
-}
-
-nav a.text-gray-600:hover {
-    border-radius: 9999px;
-    background-color: rgba(16, 185, 129, 0.1);
-}
-
 /* Mobile menu items */
 #mobile-menu a.text-primary {
     border-radius: 9999px;
