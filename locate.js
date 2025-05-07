@@ -4,8 +4,12 @@
  * It uses TomTom Maps API to search for gyms and parks
  */
 
-// Store TomTom API key 
-const TOM_TOM_API_KEY = 'JXPnqva3lZanMKstFTttkppZnHor4IXr'; // Updated API key for better reliability
+// Get TomTom API key from config
+const TOM_TOM_API_KEY = (window.config && window.config.apiKeys && window.config.apiKeys.tomtom) ? 
+    window.config.apiKeys.tomtom : 'JXPnqva3lZanMKstFTttkppZnHor4IXr'; // Fallback only if config fails
+
+// Log API key access for troubleshooting (don't log the actual key)
+console.log('TomTom API key obtained from config:', !!window.config?.apiKeys?.tomtom);
 
 // Global variables
 let map = null;
@@ -13,6 +17,7 @@ let currentMarkers = [];
 let userMarker = null;
 let searchResultsData = [];
 let searchCenter = null;
+let userLocation = null;
 
 // DOM elements
 const locationInput = document.getElementById('location-input');
@@ -56,7 +61,16 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Window fully loaded - initializing map');
         // Small delay to ensure DOM is completely rendered
         setTimeout(function() {
-            initializeMap();
+            // Try to get user location first, then initialize map
+            getUserLocation()
+                .then(location => {
+                    userLocation = location;
+                    initializeMap(userLocation);
+                })
+                .catch(error => {
+                    console.warn('Could not get user location:', error);
+                    initializeMap(); // Initialize with defaults if geolocation fails
+                });
         }, 100);
     });
     
@@ -85,12 +99,48 @@ if (searchButton) {
 }
 
 /**
- * Initialize the TomTom map
+ * Get the user's current location using geolocation API
+ * @returns {Promise<{lat: number, lng: number}>} User's coordinates
  */
+function getUserLocation() {
+    return new Promise((resolve, reject) => {
+        // Check if geolocation is supported
+        if (!navigator.geolocation) {
+            reject(new Error('Geolocation is not supported by your browser'));
+            return;
+        }
+        
+        // Options for geolocation
+        const options = {
+            enableHighAccuracy: true,
+            timeout: 5000,
+            maximumAge: 0
+        };
+        
+        // Get current position
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const coordinates = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude
+                };
+                console.log('Got user location:', coordinates);
+                resolve(coordinates);
+            },
+            (error) => {
+                console.error('Geolocation error:', error);
+                reject(error);
+            },
+            options
+        );
+    });
+}
+
 /**
  * Initialize the TomTom map
+ * @param {Object} userCoordinates - User's coordinates (optional)
  */
-function initializeMap() {
+function initializeMap(userCoordinates = null) {
     console.log('Initializing map...');
     
     // Check if map container exists
@@ -100,26 +150,43 @@ function initializeMap() {
         return;
     }
     
+    // Reset any existing map state to ensure no pre-placed markers
+    resetMapState();
+    
     // Check if TomTom is available
     if (typeof tt === 'undefined') {
         console.error('TomTom SDK not loaded');
         mapContainer.innerHTML = '<div class="p-4 bg-red-100 text-red-700 rounded">TomTom SDK failed to load. Please check your internet connection.</div>';
         return;
     }
-    
-    try {
+      try {
         // Clear the map container first to ensure clean initialization
         mapContainer.innerHTML = '';
         
-        // Set default coordinates (center of US)
-        const defaultCoordinates = [-98.5795, 39.8283];
+        // Use config values or fallbacks for default coordinates
+        const configDefaults = window.config?.mapDefaults?.initialLocation || { lat: 39.8283, lng: -98.5795 };
+        
+        // Determine initial coordinates and zoom
+        let initialCoordinates, initialZoom;
+        
+        if (userCoordinates) {
+            // Use user's actual location if available
+            initialCoordinates = [userCoordinates.lng, userCoordinates.lat];
+            initialZoom = 12;  // Closer zoom when we have user's location
+        } else {
+            // Fallback to default center
+            initialCoordinates = [configDefaults.lng, configDefaults.lat];
+            initialZoom = window.config?.mapDefaults?.defaultZoom || 4;
+        }
+        
+        console.log('Initializing map with coordinates:', initialCoordinates);
         
         // Create the map with basic settings
         map = tt.map({
             key: TOM_TOM_API_KEY,
             container: 'map-container',
-            center: defaultCoordinates,
-            zoom: 4,
+            center: initialCoordinates,
+            zoom: initialZoom,
             stylesVisibility: {
                 poi: true,  // Show points of interest
                 trafficIncidents: true,
@@ -132,12 +199,46 @@ function initializeMap() {
         // Add essential map controls
         map.addControl(new tt.NavigationControl());
         map.addControl(new tt.FullscreenControl());
-        
-        // Listen for map load event
+          // Listen for map load event
         map.on('load', function() {
             console.log('Map fully loaded');
+            
             // Force resize to ensure proper display
             window.dispatchEvent(new Event('resize'));
+              // If we have user coordinates, add a marker but DON'T initiate automatic search
+            if (userCoordinates) {
+                console.log('Adding initial user location marker');
+                addUserLocationMarker({lat: userCoordinates.lat, lng: userCoordinates.lng});
+                
+                // Store as search center for potential nearby searches
+                searchCenter = {lat: userCoordinates.lat, lng: userCoordinates.lng};
+                
+                // Optionally pre-fill the location input with reverse-geocoded address
+                reverseGeocode(userCoordinates)
+                    .then(address => {
+                        if (address && locationInput) {
+                            locationInput.value = address;
+                        }
+                    })
+                    .catch(error => {
+                        console.warn('Could not reverse-geocode user location:', error);
+                    });
+                    
+                // Show a message encouraging the user to search
+                initialMessage.innerHTML = `
+                    <div class="text-center py-8">
+                        <div class="text-primary text-4xl mb-4">
+                            <svg class="inline-block w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-700 mb-2">Your location has been found!</h3>
+                        <p class="text-gray-600 mb-4">Click the search button to find fitness resources near you.</p>
+                    </div>
+                `;
+                initialMessage.style.display = 'block';
+            }
         });
         
         // Listen for error events
@@ -154,6 +255,42 @@ function initializeMap() {
                 <p class="text-sm mt-2">Please try refreshing the page or check your internet connection.</p>
             </div>
         `;
+    }
+}
+
+/**
+ * Reset the map state completely - clear all markers and search results
+ * Called during initialization to ensure there are no pre-placed markers
+ */
+function resetMapState() {
+    // Clear any existing markers
+    if (currentMarkers && currentMarkers.length > 0) {
+        currentMarkers.forEach(marker => {
+            if (marker) marker.remove();
+        });
+        currentMarkers = [];
+    }
+    
+    // Clear user marker
+    if (userMarker) {
+        userMarker.remove();
+        userMarker = null;
+    }
+    
+    // Clear search results
+    searchResultsData = [];
+    if (searchResults) {
+        searchResults.innerHTML = '';
+    }
+    
+    // Show initial message
+    if (initialMessage) {
+        initialMessage.style.display = 'block';
+    }
+    
+    // Hide search results container
+    if (searchResults) {
+        searchResults.style.display = 'none';
     }
 }
 
@@ -345,6 +482,46 @@ function addUserLocationMarker(coordinates) {
     .setHTML(`<p class="font-medium text-sm">Your location</p>`)
     .setLngLat([coordinates.lng, coordinates.lat])
     .addTo(map);
+}
+
+/**
+ * Reverse geocode coordinates to get a formatted address
+ * @param {Object} coordinates - Coordinates object with lat and lng
+ * @returns {Promise<string>} A formatted address string
+ */
+async function reverseGeocode(coordinates) {
+    try {
+        const url = `https://api.tomtom.com/search/2/reverseGeocode/${coordinates.lat},${coordinates.lng}.json?key=${TOM_TOM_API_KEY}&radius=100`;
+        
+        const response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`Reverse geocoding failed with status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.addresses && data.addresses.length > 0) {
+            const address = data.addresses[0].address;
+            
+            // Try to create a user-friendly address string
+            let parts = [];
+            
+            if (address.streetNumber) parts.push(address.streetNumber);
+            if (address.streetName) parts.push(address.streetName);
+            if (address.municipality || address.municipalitySubdivision) {
+                parts.push(address.municipality || address.municipalitySubdivision);
+            }
+            if (address.postalCode) parts.push(address.postalCode);
+            
+            return parts.join(', ');
+        }
+        
+        return null;
+    } catch (error) {
+        console.error('Error reverse geocoding:', error);
+        return null;
+    }
 }
 
 /**

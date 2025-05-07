@@ -124,3 +124,56 @@
     width: 20px;
     height: 20px;
 }
+
+/* Map loading styles */
+.map-loading {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.8);
+    z-index: 1000;
+}
+
+.map-loading-spinner {
+    display: inline-block;
+    width: 50px;
+    height: 50px;
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #10B981;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Improve map responsiveness */
+@media (max-width: 768px) {
+    #map-container {
+        height: 350px;
+    }
+}
+
+/* Add styles for the location button */
+.locate-me-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 10;
+    background: white;
+    border-radius: 4px;
+    padding: 6px;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.1);
+    cursor: pointer;
+}
+
+.locate-me-btn:hover {
+    background: #f0f0f0;
+}
