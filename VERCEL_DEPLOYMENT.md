@@ -12,7 +12,23 @@ This guide will help you deploy the FitAi application to Vercel with proper envi
 
 ## Deployment Steps
 
-### 1. Push Your Code to GitHub
+### 1. Ensure CSS Files Are Properly Handled
+
+The application uses CSS files in both the root directory and the `css/` subdirectory. Make sure the `vercel.json` configuration includes both:
+
+```json
+"builds": [
+  { "src": "*.html", "use": "@vercel/static" },
+  { "src": "*.js", "use": "@vercel/static" },
+  { "src": "*.css", "use": "@vercel/static" },
+  { "src": "css/**/*.css", "use": "@vercel/static" },
+  { "src": "*.png", "use": "@vercel/static" }
+],
+```
+
+For extra reliability, critical navbar styles have been inlined in each HTML file to ensure consistent appearance across all pages.
+
+### 2. Push Your Code to GitHub
 
 First, push your code to a GitHub repository:
 
@@ -61,7 +77,21 @@ If you need to update your API keys in the future:
 
 ## Troubleshooting
 
+### API Issues
 If your APIs aren't working after deployment:
+
+1. Check if the environment variables are correctly set in the Vercel dashboard
+2. Verify that the API keys are valid
+3. Look at the browser console for any errors
+4. Check the deployment logs in Vercel for any build or runtime issues
+
+### CSS/Styling Issues
+If you encounter styling issues like missing navbar hover effects:
+
+1. **Clear your browser cache** - Sometimes browsers cache old CSS files. Try hard refreshing (Ctrl+F5 or Cmd+Shift+R).
+2. **Verify CSS paths** - Check that all CSS path references are correct in the HTML files.
+3. **Redeploy with cache bypass** - In the Vercel dashboard, you can redeploy with the "Clear Cache and Deploy" option.
+4. **Check browser console** - Look for 404 errors that might indicate missing CSS files.
 
 1. Check if the environment variables are correctly set in the Vercel dashboard
 2. Verify that the API keys are valid

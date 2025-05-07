@@ -1,0 +1,57 @@
+/* 
+ * vercel-fix.css
+ * Special CSS file to fix styling issues specific to Vercel deployment
+ * This file contains duplicate critical navbar styles as a fallback
+ */
+
+/* Pill-shaped active links */
+nav a.text-primary {
+    border-radius: 9999px !important;
+    padding: 0.5rem 1rem !important;
+    background-color: #10B981 !important;
+    color: white !important;
+    display: inline-block !important;
+}
+
+/* Make sure active link stays visible when hovered */
+nav a.text-primary:hover {
+    background-color: #0ea271 !important;
+    color: white !important;
+}
+
+/* Pill-shaped hover effect for nav items */
+nav a.text-gray-600 {
+    padding: 0.5rem 1rem !important;
+    display: inline-block !important;
+    border-radius: 9999px !important;
+    transition: all 0.3s ease !important;
+}
+
+nav a.text-gray-600:hover {
+    border-radius: 9999px !important;
+    background-color: #10B981 !important;
+    color: white !important;
+}
+
+/* Mobile menu items */
+#mobile-menu a.text-primary {
+    border-radius: 9999px !important;
+    padding: 0.5rem 1rem !important;
+    background-color: #10B981 !important;
+    color: white !important;
+    display: inline-block !important;
+    margin: 0.25rem 0 !important;
+}
+
+#mobile-menu a.text-gray-600:hover {
+    border-radius: 9999px !important;
+    background-color: #10B981 !important;
+    color: white !important;
+}
+
+/* Make sure .nav-active also has correct styling */
+.nav-active {
+    background-color: #10B981 !important;
+    color: white !important;
+    border-radius: 9999px !important;
+}

@@ -1438,4 +1438,56 @@ Format the response as a JSON object with the following structure:
             return null;
         }
     }
+    
+    /**
+     * Ensures consistent navbar hover effects across all deployments
+     * This adds event listeners for hover effects as a backup to CSS
+     */
+    function setupNavbarHoverEffects() {
+        const navLinks = document.querySelectorAll('nav a.text-gray-600');
+        
+        navLinks.forEach(link => {
+            // Mouse enter effect (hover start)
+            link.addEventListener('mouseenter', function() {
+                // Only apply hover effect to non-active links
+                if (!link.classList.contains('text-primary') && !link.classList.contains('nav-active')) {
+                    link.style.backgroundColor = '#10B981';
+                    link.style.color = 'white';
+                    link.style.borderRadius = '9999px';
+                }
+            });
+            
+            // Mouse leave effect (hover end)
+            link.addEventListener('mouseleave', function() {
+                // Only remove hover effect from non-active links
+                if (!link.classList.contains('text-primary') && !link.classList.contains('nav-active')) {
+                    link.style.backgroundColor = '';
+                    link.style.color = '';
+                }
+            });
+        });
+        
+        // Also handle mobile menu items
+        const mobileLinks = document.querySelectorAll('#mobile-menu a.text-gray-600');
+        
+        mobileLinks.forEach(link => {
+            link.addEventListener('mouseenter', function() {
+                if (!link.classList.contains('text-primary')) {
+                    link.style.backgroundColor = '#10B981';
+                    link.style.color = 'white';
+                    link.style.borderRadius = '9999px';
+                }
+            });
+            
+            link.addEventListener('mouseleave', function() {
+                if (!link.classList.contains('text-primary')) {
+                    link.style.backgroundColor = '';
+                    link.style.color = '';
+                }
+            });
+        });
+    }
+
+    // Initial setup for navbar hover effects
+    setupNavbarHoverEffects();
 });
