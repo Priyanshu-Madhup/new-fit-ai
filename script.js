@@ -22,14 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });    // Chatbot Functionality with Groq API
     const chatInput = document.getElementById('chat-input');
-    const sendChatButton = document.getElementById('send-chat');
-    const chatMessages = document.getElementById('chat-messages');
+    const sendChatButton = document.getElementById('send-chat');    const chatMessages = document.getElementById('chat-messages');
     const popularTopics = document.querySelectorAll('.popular-topic');
     
-    // Load environment variables
-    const GROQ_API_KEY = process.env.GROQ_API_KEY;
-    const SERPER_API_KEY = process.env.SERPER_API_KEY;
-    const TOMTOM_API_KEY = process.env.TOMTOM_API_KEY;
+    // Get Groq API key from config
+    const GROQ_API_KEY = window.FitAiConfig?.apiKeys?.groq;
     
     // Conversation history to maintain context
     let conversationHistory = [
@@ -590,9 +587,8 @@ Format the response as a JSON object with the following structure:
     const resultsContainer = document.getElementById('results-container');
     
     // TomTom API credentials - updated with valid key
-    // const tomtomAPIKey = 'JXPnqva3lZanMKstFTttkppZnHor4IXr'; // Updated TomTom API key
-    // Serper.dev API credentials
-    // const serperAPIKey = '67c090a334109db4480037614dbb1c635f29ad83'; // Serper.dev API key
+    const tomtomAPIKey = 'JXPnqva3lZanMKstFTttkppZnHor4IXr'; // Updated TomTom API key    // Serper.dev API credentials
+    const serperAPIKey = window.FitAiConfig?.apiKeys?.serper || '67c090a334109db4480037614dbb1c635f29ad83';
     
     // Initialize a default map when the page loads if we're on the location page
     if (mapContainer && window.location.pathname.includes('locate.html')) {
